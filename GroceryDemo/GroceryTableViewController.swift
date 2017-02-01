@@ -11,17 +11,25 @@ import CoreData
 
 class GroceryTableViewController: UITableViewController {
 
-    var groceries: [NSManagedObject] = []
+    var groceries: [Grocery] = []
     let kName = "item"
+    
+    var selectedIndex = 0
+    
+    var recentID = 0
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        self.loadData()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        
+        self.loadData()
+        tableView.reloadData()
+    }
+    
+    func loadData() {
         guard let appDelegate =
             UIApplication.shared.delegate as? AppDelegate else {
                 return
@@ -30,14 +38,17 @@ class GroceryTableViewController: UITableViewController {
         let managedContext =
             appDelegate.persistentContainer.viewContext
         
-        let fetchRequest =
-            NSFetchRequest<NSManagedObject>(entityName: "Grocery")
+        //        let fetchRequest =
+        //            NSFetchRequest<NSManagedObject>(entityName: "Grocery")
+        //
+        //        do {
+        //            groceries = try managedContext.fetch(fetchRequest)
+        //        } catch let error as NSError {
+        //            print("Could not fetch. \(error), \(error.userInfo)")
+        //        }
         
-        do {
-            groceries = try managedContext.fetch(fetchRequest)
-        } catch let error as NSError {
-            print("Could not fetch. \(error), \(error.userInfo)")
-        }
+        groceries = Grocery.groceryInManagedObjectContext(managedContext)
+
     }
 
     override func didReceiveMemoryWarning() {
@@ -58,6 +69,16 @@ class GroceryTableViewController: UITableViewController {
             guard let textfield = alertController.textFields?.first, let itemToSave = textfield.text else {
                 return
             }
+            
+            let tmpID = self.groceries.first!
+            
+            if  (tmpID.item?.characters.count)! > 0 {
+                self.recentID = (tmpID.value(forKey: "itemId") as? Int)!
+                self.recentID += 1
+            }else{
+                self.recentID = 1
+            }
+
             
             self.save(name: itemToSave)
             
@@ -84,22 +105,39 @@ class GroceryTableViewController: UITableViewController {
         let managedContext =
             appDelegate.persistentContainer.viewContext
         
-        let entity =
-            NSEntityDescription.entity(forEntityName: "Grocery",
-                                       in: managedContext)!
+//        let entity =
+//            NSEntityDescription.entity(forEntityName: "Grocery",
+//                                       in: managedContext)!
+//        
+//        let item = NSManagedObject(entity: entity,
+//                                     insertInto: managedContext)
+//        
+//        item.setValue(name, forKeyPath: kName)
+//        
+//        do {
+//            try managedContext.save()
+//            groceries.append(item)
+//        } catch let error as NSError {
+//            print("Could not save. \(error), \(error.userInfo)")
+//        }
         
-        let item = NSManagedObject(entity: entity,
-                                     insertInto: managedContext)
-        
-        item.setValue(name, forKeyPath: kName)
-        
-        do {
-            try managedContext.save()
-            groceries.append(item)
-        } catch let error as NSError {
-            print("Could not save. \(error), \(error.userInfo)")
+        guard name.characters.count > 0 else{
+            return
         }
+        
+        let data : [String:Any] =  [
+            "itemId": NSNumber(value: Int(self.recentID)),
+            "item": name
+        ]
+        
+        _ = Grocery.groceryWithData(data, inManageObjectContext: managedContext)
+        appDelegate.saveContext()
+        
+        self.loadData()
+        
+        tableView.reloadData()
     }
+    
     
     override func numberOfSections(in tableView: UITableView) -> Int {
         // #warning Incomplete implementation, return the number of sections
@@ -117,28 +155,77 @@ class GroceryTableViewController: UITableViewController {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
 
-        cell.textLabel?.text = list.value(forKey: kName) as? String
+        cell.textLabel?.text = list.value(forKey: "item") as? String
         return cell
     }
     
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
-        if editingStyle == .delete {
+        
+//        if editingStyle == .insert {
+//            
+//        }
+//        
+//        if editingStyle == .delete {
+//            guard let appDelegate =
+//                UIApplication.shared.delegate as? AppDelegate else {
+//                    return
+//            }
+//            
+//            appDelegate.managedObjectContext.delete(groceries[indexPath.row])
+//            
+//            do{
+//                try appDelegate.managedObjectContext.save()
+//                groceries.remove(at: indexPath.row)
+//                tableView.deleteRows(at: [indexPath], with: .fade)
+//            }catch {
+//                let saveError = error as NSError
+//                print(saveError)
+//            }
+//            
+//        }
+    }
+    
+    override func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
+        let deleteAction = UITableViewRowAction(style: UITableViewRowActionStyle.destructive, title: "Delete") { (action , indexPath ) -> Void in
+            self.isEditing = false
+            
             guard let appDelegate =
                 UIApplication.shared.delegate as? AppDelegate else {
                     return
             }
             
-            appDelegate.managedObjectContext.delete(groceries[indexPath.row])
+            appDelegate.managedObjectContext.delete(self.groceries[indexPath.row])
             
             do{
                 try appDelegate.managedObjectContext.save()
-                groceries.remove(at: indexPath.row)
+                self.groceries.remove(at: indexPath.row)
                 tableView.deleteRows(at: [indexPath], with: .fade)
             }catch {
                 let saveError = error as NSError
                 print(saveError)
             }
             
+        }
+        
+        let editAction = UITableViewRowAction(style: UITableViewRowActionStyle.default, title: "Edit") { (action , indexPath) -> Void in
+            self.isEditing = false
+            
+            self.selectedIndex = indexPath.row
+            
+            self.performSegue(withIdentifier: "showEdit", sender: self)
+            
+        }
+        
+        editAction.backgroundColor = UIColor.blue
+        return [deleteAction, editAction]
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "showEdit" {
+            let destination = segue.destination as! EditingViewController
+            let list = groceries[selectedIndex]
+            destination.tmpId = list.value(forKey: "itemId") as! Int
+            destination.tmpText = list.value(forKey: kName) as? String
         }
     }
     

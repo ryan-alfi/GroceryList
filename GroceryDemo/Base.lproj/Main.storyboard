@@ -48,10 +48,54 @@
                             </connections>
                         </barButtonItem>
                     </navigationItem>
+                    <connections>
+                        <segue destination="HMH-8x-H2G" kind="show" identifier="showEdit" id="oXK-7f-kdK"/>
+                    </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Yry-Dd-bvX" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="1052" y="33.733133433283363"/>
+        </scene>
+        <!--Editing View Controller-->
+        <scene sceneID="ec9-17-ZjQ">
+            <objects>
+                <viewController id="HMH-8x-H2G" customClass="EditingViewController" customModule="GroceryDemo" customModuleProvider="target" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="5cq-xX-YhG"/>
+                        <viewControllerLayoutGuide type="bottom" id="5c0-Dz-wDt"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="K5L-z1-wcc">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ML4-sf-qDM">
+                                <rect key="frame" x="170" y="318.5" width="34" height="30"/>
+                                <state key="normal" title="Save"/>
+                                <connections>
+                                    <action selector="saveTapped:" destination="HMH-8x-H2G" eventType="touchUpInside" id="HMZ-hY-9U6"/>
+                                </connections>
+                            </button>
+                            <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="WOo-bI-7C3">
+                                <rect key="frame" x="16" y="280" width="343" height="30"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <nil key="textColor"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <textInputTraits key="textInputTraits"/>
+                            </textField>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstItem="ML4-sf-qDM" firstAttribute="centerY" secondItem="K5L-z1-wcc" secondAttribute="centerY" id="4Gq-gp-LTw"/>
+                            <constraint firstItem="ML4-sf-qDM" firstAttribute="centerX" secondItem="K5L-z1-wcc" secondAttribute="centerX" id="j5D-3H-t5l"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="txt_edit" destination="WOo-bI-7C3" id="iSV-gd-CMe"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Vqt-9I-eu5" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1837.5999999999999" y="33.733133433283363"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="AfJ-3e-K4R">
